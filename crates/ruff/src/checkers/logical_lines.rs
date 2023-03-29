@@ -39,19 +39,10 @@ pub fn check_logical_lines(
 ) -> Vec<Diagnostic> {
     let mut context = LogicalLinesContext::new(settings);
 
-    #[cfg(feature = "logical_lines")]
     let should_fix_missing_whitespace =
         autofix.into() && settings.rules.should_fix(Rule::MissingWhitespace);
-
-    #[cfg(not(feature = "logical_lines"))]
-    let should_fix_missing_whitespace = false;
-
-    #[cfg(feature = "logical_lines")]
     let should_fix_whitespace_before_parameters =
         autofix.into() && settings.rules.should_fix(Rule::WhitespaceBeforeParameters);
-
-    #[cfg(not(feature = "logical_lines"))]
-    let should_fix_whitespace_before_parameters = false;
 
     let mut prev_line = None;
     let mut prev_indent_level = None;

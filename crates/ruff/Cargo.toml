@@ -80,5 +80,4 @@ colored = { workspace = true, features = ["no-color"] }
 
 [features]
 default = []
-logical_lines = []
 jupyter_notebook = []
