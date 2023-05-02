@@ -104,7 +104,7 @@ async def check(
 ) -> "Sequence[str]":
     """Run the given ruff binary against the specified path."""
     logger.debug(f"Checking {name} with {ruff}")
-    ruff_args = ["check", "--no-cache", "--exit-zero"]
+    ruff_args = ["check", "--no-cache", "--exit-zero", "--show-fixes"]
     if select:
         ruff_args.extend(["--select", select])
     if ignore:
@@ -235,6 +235,9 @@ def read_projects_jsonl(projects_jsonl: Path) -> dict[str, Repository]:
                     repository["owner"]["login"],
                     repository["name"],
                     None,
+                    select=repository.get("select"),
+                    ignore=repository.get("ignore"),
+                    exclude=repository.get("exclude"),
                 )
         else:
             assert "owner" in data, "Unknown ruff-usage-aggregate format"
@@ -245,6 +248,9 @@ def read_projects_jsonl(projects_jsonl: Path) -> dict[str, Repository]:
                 data["owner"],
                 data["repo"],
                 data.get("ref"),
+                select=data.get("select"),
+                ignore=data.get("ignore"),
+                exclude=data.get("exclude"),
             )
     return repositories
 
