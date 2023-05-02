@@ -18,6 +18,7 @@ import time
 from asyncio.subprocess import PIPE, create_subprocess_exec
 from contextlib import asynccontextmanager, nullcontext
 from pathlib import Path
+from signal import SIGINT, SIGTERM
 from typing import TYPE_CHECKING, NamedTuple, Optional, Self
 
 if TYPE_CHECKING:
@@ -399,7 +400,8 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.INFO)
 
-    asyncio.run(
+    loop = asyncio.get_event_loop()
+    main_task = asyncio.ensure_future(
         main(
             ruff1=args.ruff1,
             ruff2=args.ruff2,
@@ -407,3 +409,10 @@ if __name__ == "__main__":
             checkouts=args.checkouts,
         ),
     )
+    # https://stackoverflow.com/a/58840987/3549270
+    for signal in [SIGINT, SIGTERM]:
+        loop.add_signal_handler(signal, main_task.cancel)
+    try:
+        loop.run_until_complete(main_task)
+    finally:
+        loop.close()
