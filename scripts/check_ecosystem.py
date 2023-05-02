@@ -104,7 +104,14 @@ async def check(
 ) -> "Sequence[str]":
     """Run the given ruff binary against the specified path."""
     logger.debug(f"Checking {name} with {ruff}")
-    ruff_args = ["check", "--no-cache", "--exit-zero", "--show-fixes"]
+    ruff_args = [
+        "check",
+        "--no-cache",
+        "--exit-zero",
+        "--format",
+        "ecosystem-ci",
+        "--show-fixes",
+    ]
     if select:
         ruff_args.extend(["--select", select])
     if ignore:
