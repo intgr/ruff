@@ -35,6 +35,7 @@ class Repository(NamedTuple):
     select: str = ""
     ignore: str = ""
     exclude: str = ""
+    show_fixes: bool = False
 
     @asynccontextmanager
     async def clone(self: Self, checkout_dir: Path) -> "AsyncIterator[Path]":
@@ -75,15 +76,26 @@ class Repository(NamedTuple):
 
 
 REPOSITORIES = {
-    "airflow": Repository("apache", "airflow", "main", select="ALL"),
-    "bokeh": Repository("bokeh", "bokeh", "branch-3.2", select="ALL"),
-    "build": Repository("pypa", "build", "main"),
-    "cibuildwheel": Repository("pypa", "cibuildwheel", "main"),
-    "disnake": Repository("DisnakeDev", "disnake", "master"),
-    "scikit-build": Repository("scikit-build", "scikit-build", "main"),
-    "scikit-build-core": Repository("scikit-build", "scikit-build-core", "main"),
-    "typeshed": Repository("python", "typeshed", "main", select="PYI"),
-    "zulip": Repository("zulip", "zulip", "main", select="ALL"),
+    "airflow": Repository("apache", "airflow", "main", select="ALL", show_fixes=False),
+    "bokeh": Repository("bokeh", "bokeh", "branch-3.2", select="ALL", show_fixes=False),
+    "build": Repository("pypa", "build", "main", show_fixes=True),
+    "cibuildwheel": Repository("pypa", "cibuildwheel", "main", show_fixes=True),
+    "disnake": Repository("DisnakeDev", "disnake", "master", show_fixes=True),
+    "scikit-build": Repository("scikit-build", "scikit-build", "main", show_fixes=True),
+    "scikit-build-core": Repository(
+        "scikit-build",
+        "scikit-build-core",
+        "main",
+        show_fixes=True,
+    ),
+    "typeshed": Repository(
+        "python",
+        "typeshed",
+        "main",
+        select="PYI",
+        show_fixes=True,
+    ),
+    "zulip": Repository("zulip", "zulip", "main", select="ALL", show_fixes=False),
 }
 
 SUMMARY_LINE_RE = re.compile(r"^(Found \d+ error.*)|(.*potentially fixable with.*)$")
@@ -101,23 +113,22 @@ async def check(
     select: str = "",
     ignore: str = "",
     exclude: str = "",
+    show_fixes: bool = False,
 ) -> "Sequence[str]":
     """Run the given ruff binary against the specified path."""
     logger.debug(f"Checking {name} with {ruff}")
-    ruff_args = [
-        "check",
-        "--no-cache",
-        "--exit-zero",
-        "--format",
-        "ecosystem-ci",
-        "--show-fixes",
-    ]
+    ruff_args = ["check", "--no-cache", "--exit-zero"]
     if select:
         ruff_args.extend(["--select", select])
     if ignore:
         ruff_args.extend(["--ignore", ignore])
     if exclude:
         ruff_args.extend(["--exclude", exclude])
+    if show_fixes:
+        # Generating fixes is slow and verbose
+        ruff_args.extend(["--show-fixes", "--format", "ecosystem-ci"])
+
+    print(path, ruff_args)
 
     start = time.time()
     proc = await create_subprocess_exec(
@@ -195,6 +206,7 @@ async def compare(
                             select=repo.select,
                             ignore=repo.ignore,
                             exclude=repo.exclude,
+                            show_fixes=repo.show_fixes,
                         ),
                     )
                     check2 = tg.create_task(
@@ -205,6 +217,7 @@ async def compare(
                             select=repo.select,
                             ignore=repo.ignore,
                             exclude=repo.exclude,
+                            show_fixes=repo.show_fixes,
                         ),
                     )
             except ExceptionGroup as e:
