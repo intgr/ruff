@@ -128,7 +128,7 @@ async def check(
     if exclude:
         ruff_args.extend(["--exclude", exclude])
     if show_fixes:
-        ruff_args.extend(["--show-fixes", "--format", "ecosystem-ci"])
+        ruff_args.extend(["--show-fixes", "--ecosystem-ci"])
 
     print(path, ruff_args)
 
