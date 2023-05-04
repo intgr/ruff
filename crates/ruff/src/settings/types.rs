@@ -230,11 +230,6 @@ pub enum SerializationFormat {
     Gitlab,
     Pylint,
     Azure,
-    /// For use with check_ecosystem.py only
-    ///
-    /// TODO(konstin): Remove ecosystem ci once [ruff::message::diff::Diff] is stable.
-    #[cfg(feature = "ecosystem_ci")]
-    EcosystemCi,
 }
 
 impl Default for SerializationFormat {
