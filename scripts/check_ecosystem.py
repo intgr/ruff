@@ -36,6 +36,7 @@ class Repository(NamedTuple):
     select: str = ""
     ignore: str = ""
     exclude: str = ""
+    # Generating fixes is slow and verbose
     show_fixes: bool = False
 
     @asynccontextmanager
@@ -76,6 +77,7 @@ class Repository(NamedTuple):
         yield Path(checkout_dir)
 
 
+# We only check the fixes for the not-select-ALL cases
 REPOSITORIES = {
     "airflow": Repository("apache", "airflow", "main", select="ALL", show_fixes=False),
     "bokeh": Repository("bokeh", "bokeh", "branch-3.2", select="ALL", show_fixes=False),
@@ -126,7 +128,6 @@ async def check(
     if exclude:
         ruff_args.extend(["--exclude", exclude])
     if show_fixes:
-        # Generating fixes is slow and verbose
         ruff_args.extend(["--show-fixes", "--format", "ecosystem-ci"])
 
     print(path, ruff_args)
