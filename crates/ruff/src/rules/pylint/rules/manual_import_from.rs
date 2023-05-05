@@ -9,9 +9,8 @@ use crate::registry::AsRule;
 
 #[violation]
 pub struct ManualFromImport {
-    pub module: String,
-    pub name: String,
-    pub fixable: bool,
+    module: String,
+    name: String,
 }
 
 impl Violation for ManualFromImport {
@@ -23,11 +22,9 @@ impl Violation for ManualFromImport {
         format!("Use `from {module} import {name}` in lieu of alias")
     }
 
-    fn autofix_title_formatter(&self) -> Option<fn(&Self) -> String> {
-        self.fixable
-            .then_some(|ManualFromImport { module, name, .. }| {
-                format!("Replace with `from {module} import {name}`")
-            })
+    fn autofix_title(&self) -> Option<String> {
+        let ManualFromImport { module, name, .. } = self;
+        Some(format!("Replace with `from {module} import {name}`"))
     }
 }
 
@@ -48,7 +45,6 @@ pub fn manual_from_import(checker: &mut Checker, stmt: &Stmt, alias: &Alias, nam
         ManualFromImport {
             module: module.to_string(),
             name: name.to_string(),
-            fixable,
         },
         alias.range(),
     );
