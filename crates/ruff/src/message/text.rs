@@ -92,7 +92,7 @@ impl Emitter for TextEmitter {
                 col = diagnostic_location.column,
                 sep = ":".cyan(),
                 code_and_body = RuleCodeAndBody {
-                    message: &message,
+                    message,
                     show_fix_status: self.flags.contains(EmitterFlags::SHOW_FIX_STATUS)
                 }
             )?;
